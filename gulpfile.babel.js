@@ -14,7 +14,8 @@ const DIRS = {
 };
 
 const JS_DEPENDENCIES = [
-  'node_modules/d3/d3.js'
+  'node_modules/d3/d3.js',
+  'node_modules/d3-tip/index.js'
 ];
 
 const CSS_DEPENDENCIES = [
@@ -22,8 +23,7 @@ const CSS_DEPENDENCIES = [
 
 const PATHS = {
   sass: [`${DIRS.src}/scss/*.scss`, `${DIRS.src}/scss/**/*.scss`],
-  js: [`${DIRS.src}/js/*.js`, `${DIRS.src}/js/**/*.js`],
-  html: [`${DIRS.src}/templates/*.html`, `${DIRS.src}/templates/**/*.html`]
+  js: [`${DIRS.src}/js/*.js`, `${DIRS.src}/js/**/*.js`]
 };
 
 // Handle sass changes.
@@ -49,18 +49,11 @@ gulp.task('sass', done => {
 });
 
 // Handle html changes.
-gulp.task('html', done => {
-  return gulp.src(PATHS.html)
-    .pipe(gulp.dest(`${DIRS.dest}/templates`))
-    .pipe(browserSync.stream({match: '**/*.html'}))
-});
-
-// Handle assets changes.
-gulp.task('assets', done => {
-  return gulp.src(`${DIRS.src}/assets/*`)
-    .pipe(gulp.dest(`${DIRS.dest}/assets`));
-});
-
+// gulp.task('html', done => {
+//   return gulp.src(PATHS.html)
+//     .pipe(gulp.dest(`${DIRS.dest}/templates`))
+//     .pipe(browserSync.stream({match: '**/*.html'}))
+// });
 // Handle js changes.
 gulp.task('js', done => {
   return gulp.src(PATHS.js)
@@ -109,30 +102,22 @@ gulp.task('server', () => {
 
 // Task for watching file changes and livereloading the development server.
 gulp.task('watch', cb => {
-  sequence(['sass', 'js', 'html', 'assets'], 'revision', ['server', 'watching'], cb);
+  // sequence(['sass', 'js', 'html', 'assets'], 'revision', ['server', 'watching'], cb);
+  sequence(['sass', 'js', 'html'], ['server', 'watching'], cb);
 });
 
 gulp.task('watching', () => {
   gulp.watch(PATHS.js, ['js']);
   gulp.watch(PATHS.sass, ['sass']);
-  gulp.watch(PATHS.html, ['html']);
 });
 
 // Gulp default task.
 gulp.task('default', ['watch']);
 
-gulp.task('revision', () => {
+gulp.task('html', () => {
   return gulp.src(`${DIRS.src}/index.html`)
     .pipe(gulp.dest(DIRS.dest))
-    .pipe(plugins.revAppend())
     .pipe(gulp.dest(DIRS.dest));
 });
-
-gulp.task('minifyHTML', function() {
-  return gulp.src(PATHS.html)
-    .pipe(plugins.htmlmin({collapseWhitespace: true}))
-    .pipe(gulp.dest(`${DIRS.dest}/templates`))
-});
-
 // Build command
-gulp.task('build', cb => sequence(['sass', 'minifyJS', 'minifyHTML', 'assets'], 'revision', cb));
+gulp.task('build', cb => sequence(['sass', 'minifyJS, html'], cb));

@@ -1,21 +1,43 @@
-.bubbles {
-  .bubble-color-1 {
-    fill: $rank1;
+.bubble-matrix {
+  .bubbles {
+    .bubble-color-1 {
+      fill: $rank1;
+    }
+    .bubble-color-2 {
+      fill: $rank2;
+    }
+    .bubble-color-3 {
+      fill: $rank3;
+    }
+    .bubble-color-4 {
+      fill: $rank4;
+    }
+    .bubble-color-5 {
+      fill: $rank5;
+    }
+    .bubble-color-6 {
+      fill: $rank6;
+    }
+    .bubble-color-7 {
+      fill: $rank7;
+    }
+    .bubble-color-8 {
+      fill: $rank8;
+    }
+    .bubble-color-9 {
+      fill: $rank9;
+    }
   }
 
-  .bubble-color-2 {
-    fill: $rank3;
+  .vertical-lines, .horizontal-lines {
+    stroke: $grey;
   }
 
-  .bubble-color-3 {
-    fill: $rank5;
+  .top-columns, .bottom-columns {
+    text-anchor: middle;
   }
-}
 
-.vertical-lines, .horizontal-lines {
-  stroke: $grey;
-}
-
-rect {
-  fill: $white;
+  rect {
+    fill: $white;
+  }
 }

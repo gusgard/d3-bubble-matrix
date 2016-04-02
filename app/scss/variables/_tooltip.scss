@@ -1,0 +1,28 @@
+.d3-tip {
+  background: rgba(0, 0, 0, .8);
+  border-radius: 2px;
+  color: #fff;
+  font-weight: bold;
+  line-height: 1;
+  padding: 12px;
+
+  /* Creates a small triangle extender for the tooltip */
+  &:after {
+    box-sizing: border-box;
+    color: rgba(0, 0, 0, .8);
+    content: "\25BC";
+    display: inline;
+    font-size: 10px;
+    line-height: 1;
+    position: absolute;
+    text-align: center;
+    width: 100%;
+  }
+
+  /* Style northward tooltips differently */
+  &.n:after {
+    left: 0;
+    margin: -1px 0 0 0;
+    top: 100%;
+  }
+}
