@@ -16,7 +16,6 @@
  * @param {number}      options.maxColors: The numbers of colors to used.
  * @param {boolean}     options.reverseColor:  Reverse the color scale.
  * @param {object}      options.padding: Padding for the matrix.
- * @param {boolean}     options.responsive: Make the matrix responsive.
  * @param {function}    options.tooltip: Function to show tooltip, need to have show and hide method.
  * @param {boolean}     options.hideTooltip: Show the tooltip for the bubbles.
  * @param {object}      options.classesName: The names of the classes used for each element.
@@ -24,7 +23,7 @@
  * @param {boolean}     options.hideRightTitle: Hide the rigth title.
  * @param {boolean}     options.hideTopTitle: Hide the top title.
  * @param {boolean}     options.hideBottomTitle: Hide the bottom title.
-
+ * @param {boolean}     options.duration: The duration of the transition.
  */
 class BubbleMatrix {
   constructor (options) {
@@ -46,6 +45,7 @@ class BubbleMatrix {
     this.hideTopTitle = options.hideTopTitle || false;
     this.hideBottomTitle = options.hideBottomTitle || false;
 
+    this.duration = options.duration || 2000;
     // Constants
     this.HORIZONTAL_PADDING = 0.5;
     this.VERTICAL_PADDING = 0.5;
@@ -125,6 +125,7 @@ class BubbleMatrix {
     this.scale.x = d3.scale.ordinal()
       .domain(d3.range(0, this.columns.length))
       .rangePoints([start, end], this.HORIZONTAL_PADDING);
+
     return this;
   }
 
@@ -136,9 +137,9 @@ class BubbleMatrix {
       .renderLeftRows()
       .renderRightRows()
       .initScaleX()
+      .renderBackground()
       .renderTopColumns()
       .renderBottomColumns()
-      .renderBackground()
       .renderBubbles();
   }
 
@@ -154,9 +155,12 @@ class BubbleMatrix {
       .data(this.rows)
       .enter()
       .append('line')
-      .attr('y1', (_, i) => this.scale.y(i) + this.PADDING.top)
-      .attr('y2', (_, i) => this.scale.y(i) + this.PADDING.top)
       .attr('x1', this.scale.x(0))
+      .attr('y1', (_, i) => this.scale.y(i) + this.PADDING.top)
+      .attr('x2', this.scale.x(0))
+      .attr('y2', (_, i) => this.scale.y(i) + this.PADDING.top)
+      .transition()
+      .duration(this.duration / 2)
       .attr('x2', this.scale.x(this.columns.length - 1));
 
     // vertical lines
@@ -167,10 +171,14 @@ class BubbleMatrix {
       .data(this.columns)
       .enter()
       .append('line')
-      .attr('y1', (_, i) => this.scale.y(0))
-      .attr('y2', (_, i) => this.scale.y(this.rows.length - 1))
       .attr('x1', (_, i) => this.scale.x(i))
+      .attr('y1', (_, i) => this.scale.y(0))
       .attr('x2', (_, i) => this.scale.x(i))
+      .attr('y2', (_, i) => this.scale.y(0))
+      .transition()
+      .duration(this.duration / 2)
+      .attr('y2', (_, i) => this.scale.y(this.rows.length - 1));
+
     return this;
   }
 
@@ -191,7 +199,6 @@ class BubbleMatrix {
       .attr('y', (_, i) => this.scale.y(i) + this.PADDING.top)
       .attr('dy', 5)
       .text(row => row.name);
-
     return this;
   }
 
@@ -214,6 +221,7 @@ class BubbleMatrix {
       .attr('y', (_, i) => this.scale.y(i) + this.PADDING.top)
       .attr('dy', 5)
       .text(row => row.name);
+
     return this;
   }
 
@@ -222,6 +230,7 @@ class BubbleMatrix {
    */
   renderTopColumns () {
     if (this.hideTopTitle) return this;
+
     this.container
       .append('g')
       .attr('class', this.CLASS.topColumns)
@@ -233,6 +242,7 @@ class BubbleMatrix {
       .attr('x', (_, i) => this.scale.x(i))
       .attr('y', this.PADDING.top)
       .text(date => date);
+
     return this;
   }
 
@@ -241,6 +251,7 @@ class BubbleMatrix {
    */
   renderBottomColumns () {
     if (this.hideBottomTitle) return this;
+
     this.container
       .append('g')
       .attr('class', this.CLASS.bottomColumns)
@@ -252,6 +263,7 @@ class BubbleMatrix {
       .attr('x', (_, i) => this.scale.x(i))
       .attr('y', this.height + this.PADDING.bottom + this.PADDING.top)
       .text(date => date);
+
     return this;
   }
 
@@ -259,6 +271,7 @@ class BubbleMatrix {
    * Render the bubble of the matrix.
    */
   renderBubbles () {
+    let _this = this;
     let events = {};
     if (!this.hideTooltip) {
       events.mouseover = this.tooltip.show;
@@ -286,14 +299,24 @@ class BubbleMatrix {
         .attr('x', (d, i) => this.scale.x(i) - this.RECT_SIZE / 2)
         .attr('width', this.RECT_SIZE)
         .attr('height', this.RECT_SIZE)
-        .on(events)
+        .on(events);
+
       bubble
         .append('circle')
         .attr('class', d => this.CLASS.color + this.scale.color(d))
         .attr('cy', () => this.scale.y(index) + this.PADDING.top)
         .attr('cx', (_, i) => this.scale.x(i))
-        .attr('r', d => this.scale.radius(d))
+        .attr('r', 0)
         .on(events)
+        .on('mouseenter', function () {
+          d3.select(this).transition().attr('r', d => _this.scale.radius(d) * 1.2);
+        })
+        .on('mouseleave', function () {
+          d3.select(this).transition().attr('r', d => _this.scale.radius(d));
+        })
+        .transition()
+        .duration(this.duration)
+        .attr('r', d => this.scale.radius(d))
     }
     return this;
   }
