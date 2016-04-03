@@ -11,11 +11,19 @@
  * @param {number}      options.width: The width of the canvas, not the matrix.
  * @param {number}      options.height:    The height of the canvas, not the matrix.
  * @param {object}      options.data:  The data for the rows, cols and values.
- * @param {function}    options.maxRadius:
+ * @param {number}      options.maxRadius: The radius of the circles.
  * @param {function}    options.onClick:  The function to trigger when click a bubble.
- * @param {function}    options.addTooltip:
- * @param {function}    options.maxColors: The numbers of colors to used.
- * @param {function}    options.reverseColor:  Reverse the color scale.
+ * @param {number}      options.maxColors: The numbers of colors to used.
+ * @param {boolean}     options.reverseColor:  Reverse the color scale.
+ * @param {object}      options.padding: Padding for the matrix.
+ * @param {boolean}     options.responsive: Make the matrix responsive.
+ * @param {function}    options.tooltip: Function to show tooltip, need to have show and hide method.
+ * @param {boolean}     options.hideTooltip: Show the tooltip for the bubbles.
+ * @param {object}      options.classesName: The names of the classes used for each element.
+ * @param {boolean}     options.hideLeftTitle: Hide the left title.
+ * @param {boolean}     options.hideRightTitle: Hide the rigth title.
+ * @param {boolean}     options.hideTopTitle: Hide the top title.
+ * @param {boolean}     options.hideBottomTitle: Hide the bottom title.
 
  */
 class BubbleMatrix {
@@ -23,28 +31,33 @@ class BubbleMatrix {
     if (!options.root && !options.id) {
       throw 'Missing root or id';
     }
+    if (!options.data) {
+      throw 'Missing data';
+    }
+
     this.selection = options.root || d3.select(`#${options.id}`);
 
     this.columns = options.data.columns;
     this.rows = options.data.rows;
-    this.name = options.data.name;
-    this.MAX_RADIUS = options.maxRadius || 26;
-    this.onClick = options.onClick;
+    this.onClick = options.onClick || false;
+
+    this.hideLeftTitle = options.hideLeftTitle || false;
+    this.hideRightTitle = options.hideRightTitle || false;
+    this.hideTopTitle = options.hideTopTitle || false;
+    this.hideBottomTitle = options.hideBottomTitle || false;
 
     // Constants
-    this.MAX_COLORS = options.maxColors || 9;
     this.HORIZONTAL_PADDING = 0.5;
     this.VERTICAL_PADDING = 0.5;
-    this.PADDING = { top: 20, right: 20, bottom: 20, left: 20
-    };
+    this.MAX_RADIUS = options.maxRadius || 26;
+    this.MAX_COLORS = options.maxColors || 9;
+    this.PADDING = options.padding || { top: 20, right: 0, bottom: 20, left: 10 };
     this.RECT_SIZE = this.MAX_RADIUS * 2;
 
     this.COLOR_DOMAIN = options.reverseColor ? [1, 0] : [0, 1];
 
-
-    this.CLASS = {
+    this.CLASS = options.classesName || {
       bubbleMatrix: 'bubble-matrix',
-      d3Tip: 'd3-tip',
       leftRows: 'left-rows',
       rightRows: 'right-rows',
       horizontalLines: 'horizontal-lines',
@@ -73,6 +86,16 @@ class BubbleMatrix {
     this.width = width - this.PADDING.right - this.PADDING.left;
     this.height = height - this.PADDING.bottom - this.PADDING.top;
 
+    this.hideTooltip = options.hideTooltip || false;
+    if (!this.hideTooltip) {
+      this.tooltip = options.tooltip || d3.tip()
+        .attr('class', 'd3-tip')
+        .offset([-10, 0])
+        .html(value => 'Value: ' + value);
+      // Invoke the tip in the context of your visualization
+      this.container.call(this.tooltip);
+    }
+
     this.init();
   }
 
@@ -89,27 +112,24 @@ class BubbleMatrix {
 
     this.scale.radius = d3.scale.sqrt()
       .range([0, this.MAX_RADIUS]);
-
-    this.tip = d3.tip()
-      .attr('class', this.CLASS.d3Tip)
-      .offset([-10, 0])
-      .html((d) => { return d; });
-
-    /* Invoke the tip in the context of your visualization */
-    this.container.call(this.tip)
   }
 
   initScaleX () {
-    let leftWidth = d3.select(`.${this.CLASS.leftRows}`).node().getBBox().width;
-    let rightWidth = d3.select(`.${this.CLASS.rightRows}`).node().getBBox().width;
+    let start = 0;
+    if (!this.hideLeftTitle) {
+      let leftWidth = d3.select(`.${this.CLASS.leftRows}`).node().getBBox().width;
+      start = leftWidth + this.PADDING.left;
+    }
+    let rightWidth = this.hideRightTitle ? 0 : d3.select(`.${this.CLASS.rightRows}`).node().getBBox().width;
+    let end = this.width - rightWidth + this.PADDING.left;
     this.scale.x = d3.scale.ordinal()
       .domain(d3.range(0, this.columns.length))
-      .rangePoints([leftWidth, this.width - rightWidth], this.HORIZONTAL_PADDING);
+      .rangePoints([start, end], this.HORIZONTAL_PADDING);
     return this;
   }
 
   /**
-   * Render the overall matrix inside of the root element.
+   * Render the bubble matrix.
    */
   render () {
     this
@@ -122,6 +142,9 @@ class BubbleMatrix {
       .renderBubbles();
   }
 
+  /**
+   * Render horizontal and vertical lines.
+   */
   renderBackground () {
     // horizontal lines
     this.container
@@ -141,7 +164,7 @@ class BubbleMatrix {
       .append('g')
       .attr('class', this.CLASS.verticalLines)
       .selectAll('line')
-      .data(this.rows)
+      .data(this.columns)
       .enter()
       .append('line')
       .attr('y1', (_, i) => this.scale.y(0))
@@ -155,6 +178,7 @@ class BubbleMatrix {
    * Render the left rows of the matrix.
    */
   renderLeftRows () {
+    if (this.hideLeftTitle) return this;
     this.container
       .append('g')
       .attr('class', this.CLASS.leftRows)
@@ -175,7 +199,8 @@ class BubbleMatrix {
    * Render the right rows of the matrix.
    */
   renderRightRows () {
-    let leftWidth = d3.select(`.${this.CLASS.leftRows}`).node().getBBox().width;
+    if (this.hideRightTitle) return this;
+    let leftWidth = this.hideLeftTitle ? 0 : d3.select(`.${this.CLASS.leftRows}`).node().getBBox().width;
 
     this.container
       .append('g')
@@ -185,7 +210,7 @@ class BubbleMatrix {
       .enter()
       .append('text')
       .attr('class', this.CLASS.row)
-      .attr('x', (_, i) => this.width - leftWidth + this.PADDING.right)
+      .attr('x', (_, i) => this.width + this.PADDING.right + this.PADDING.left)
       .attr('y', (_, i) => this.scale.y(i) + this.PADDING.top)
       .attr('dy', 5)
       .text(row => row.name);
@@ -196,6 +221,7 @@ class BubbleMatrix {
    * Render the top columns of the matrix.
    */
   renderTopColumns () {
+    if (this.hideTopTitle) return this;
     this.container
       .append('g')
       .attr('class', this.CLASS.topColumns)
@@ -214,6 +240,7 @@ class BubbleMatrix {
    * Render the bottom columns of the matrix.
    */
   renderBottomColumns () {
+    if (this.hideBottomTitle) return this;
     this.container
       .append('g')
       .attr('class', this.CLASS.bottomColumns)
@@ -232,6 +259,14 @@ class BubbleMatrix {
    * Render the bubble of the matrix.
    */
   renderBubbles () {
+    let events = {};
+    if (!this.hideTooltip) {
+      events.mouseover = this.tooltip.show;
+      events.mouseout = this.tooltip.hide;
+    }
+    if (this.onClick) {
+      events.click =  this.onClick.bind(this);
+    }
     let bubbles = this.container
       .append('g')
       .attr('class', this.CLASS.bubbles);
@@ -244,24 +279,21 @@ class BubbleMatrix {
         .selectAll('circle')
         .data(row.values)
         .enter();
+
       bubble
         .append('rect')
         .attr('y', (d) => this.scale.y(index) + this.PADDING.top - this.RECT_SIZE / 2)
         .attr('x', (d, i) => this.scale.x(i) - this.RECT_SIZE / 2)
         .attr('width', this.RECT_SIZE)
         .attr('height', this.RECT_SIZE)
-        .on('click', this.onClick.bind(this))
-        .on('mouseover', this.tip.show)
-        .on('mouseout', this.tip.hide)
+        .on(events)
       bubble
         .append('circle')
         .attr('class', d => this.CLASS.color + this.scale.color(d))
         .attr('cy', () => this.scale.y(index) + this.PADDING.top)
         .attr('cx', (_, i) => this.scale.x(i))
         .attr('r', d => this.scale.radius(d))
-        .on('click', this.onClick.bind(this))
-        .on('mouseover', this.tip.show)
-        .on('mouseout', this.tip.hide)
+        .on(events)
     }
     return this;
   }

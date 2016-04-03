@@ -36,6 +36,9 @@
   .top-columns, .bottom-columns {
     text-anchor: middle;
   }
+  .right-rows {
+    text-anchor: end;
+  }
 
   rect {
     fill: $white;
