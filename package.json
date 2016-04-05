@@ -20,7 +20,8 @@
   "scripts": {
     "start": "gulp watch",
     "build": "gulp build",
-    "dist": "gulp dist"
+    "dist": "gulp dist",
+    "publish": "gulp dist; npm publish"
   },
   "dependencies": {
     "d3": "^3.5.16",
