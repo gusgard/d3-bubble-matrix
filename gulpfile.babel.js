@@ -10,7 +10,7 @@ let plugins = gulpLoadPlugins();
 const DIRS = {
   src: 'app',
   dest: 'build',
-  js: { app: 'js/app.js', libs: 'js/libs.js' }
+  js: { app: 'js/bubble-matrix.js', libs: 'js/libs.js' }
 };
 
 const JS_DEPENDENCIES = [
@@ -31,21 +31,21 @@ gulp.task('sass', done => {
   return gulp.src(PATHS.sass)
     .pipe(plugins.sourcemaps.init())
     .pipe(plugins.sass())
-    .pipe(plugins.concat('css/main.min.css'))
+    .pipe(plugins.concat('css/bubble-matrix.min.css'))
     .pipe(plugins.cleanCss())
     .pipe(plugins.sourcemaps.write(`../${DIRS.dest}`))
     .pipe(gulp.dest(DIRS.dest))
     .pipe(browserSync.stream({match: '**/*.css'}))
-    .on('end', () => {
-      gulp
-        .src(CSS_DEPENDENCIES)
-        .pipe(plugins.sourcemaps.init())
-        .pipe(plugins.cleanCss())
-        .pipe(plugins.concat('css/libs.min.css'))
-        .pipe(plugins.sourcemaps.write(`../${DIRS.dest}`))
-        .pipe(gulp.dest(DIRS.dest))
-        .pipe(browserSync.stream({match: '**/*.css'}))
-    });
+    // .on('end', () => {
+    //   gulp
+    //     .src(CSS_DEPENDENCIES)
+    //     .pipe(plugins.sourcemaps.init())
+    //     .pipe(plugins.cleanCss())
+    //     .pipe(plugins.concat('css/libs.min.css'))
+    //     .pipe(plugins.sourcemaps.write(`../${DIRS.dest}`))
+    //     .pipe(gulp.dest(DIRS.dest))
+    //     .pipe(browserSync.stream({match: '**/*.css'}))
+    // });
 });
 
 // Handle html changes.
@@ -102,7 +102,6 @@ gulp.task('server', () => {
 
 // Task for watching file changes and livereloading the development server.
 gulp.task('watch', cb => {
-  // sequence(['sass', 'js', 'html', 'assets'], 'revision', ['server', 'watching'], cb);
   sequence(['sass', 'js', 'html'], ['server', 'watching'], cb);
 });
 

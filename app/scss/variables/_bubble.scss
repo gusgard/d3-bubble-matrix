@@ -1,4 +1,10 @@
 .bubble-matrix {
+  .rects {
+    rect {
+      fill: $white;
+      cursor: pointer;
+    }
+  }
   .bubbles {
     .bubble-color-1 {
       fill: $rank1;
@@ -26,10 +32,6 @@
     }
     .bubble-color-9 {
       fill: $rank9;
-    }
-    rect {
-      fill: $white;
-      cursor: pointer;
     }
     circle {
       cursor: pointer;
