@@ -1,0 +1,37 @@
+{
+  "name": "d3-bubble-matrix",
+  "description": "Bubble matrix with d3",
+  "main": "",
+  "authors": [
+    "Gustavo Gard"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "d3",
+    "bubble",
+    "matrix",
+    "chart",
+    "bubble-matrix",
+    "bubble-chart"
+  ],
+  "homepage": "https://github.com/gusgard/d3-bubble-matrix",
+  "moduleType": [],
+  "ignore": [
+    "assets",
+    "bower_components",
+    "build",
+    "node_modules",
+    "src",
+    ".babelrc",
+    ".gitignore",
+    ".jshintrc",
+    ".npmignore",
+    "gulpfile.babel.js",
+    "package.json",
+    "npm-debug.log"
+  ],
+  "dependencies": {
+    "d3": "^3.5.16",
+    "d3-tip": "^0.6.7"
+  }
+}
