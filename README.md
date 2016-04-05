@@ -2,8 +2,6 @@
 
 A bubble matrix, for representing any kind of bidimensional data.
 
-![bubble matrix](https://github.com/gusgard/d3-bubble-matrix/blob/master/assets/bubble-matrix.gif)
-
 ![bubble-matrix](assets/bubble-matrix.gif)
 
 ## Install
