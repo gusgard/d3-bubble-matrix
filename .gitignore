@@ -2,7 +2,6 @@ logs/*
 !.gitkeep
 node_modules/
 build/
-tmp
 .DS_Store
-.idea
 npm-debug.log
+dist/

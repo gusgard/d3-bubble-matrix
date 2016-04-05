@@ -1,6 +1,6 @@
 {
   "name": "d3-bubble-matrix",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "description": "Bubble matrix with d3",
   "homepage": "https://github.com/gusgard/d3-bubble-matrix#readme",
   "author": "Gustavo Gard",
@@ -19,7 +19,8 @@
   "license": "MIT",
   "scripts": {
     "start": "gulp watch",
-    "build": "gulp build"
+    "build": "gulp build",
+    "dist": "gulp dist"
   },
   "dependencies": {
     "d3": "^3.5.16",

@@ -1,5 +1,5 @@
 /**
- * Bubble Matrix.
+ * Bubble Matrix v0.0.4
  *
  * Displays the an bubble matrix
  *

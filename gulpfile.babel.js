@@ -8,9 +8,10 @@ import browserSync from 'browser-sync';
 let plugins = gulpLoadPlugins();
 
 const DIRS = {
-  src: 'app',
-  dest: 'build',
-  js: { app: 'js/bubble-matrix.js', libs: 'js/libs.js' }
+  src: 'src',
+  build: 'build',
+  dist: 'dist',
+  js: { app: 'js/bubble-matrix.js', min: 'js/bubble-matrix.min.js', libs: 'js/libs.js' }
 };
 
 const JS_DEPENDENCIES = [
@@ -18,8 +19,7 @@ const JS_DEPENDENCIES = [
   'node_modules/d3-tip/index.js'
 ];
 
-const CSS_DEPENDENCIES = [
-];
+const CSS_DEPENDENCIES = [];
 
 const PATHS = {
   sass: [`${DIRS.src}/scss/*.scss`, `${DIRS.src}/scss/**/*.scss`],
@@ -33,27 +33,11 @@ gulp.task('sass', done => {
     .pipe(plugins.sass())
     .pipe(plugins.concat('css/bubble-matrix.min.css'))
     .pipe(plugins.cleanCss())
-    .pipe(plugins.sourcemaps.write(`../${DIRS.dest}`))
-    .pipe(gulp.dest(DIRS.dest))
-    .pipe(browserSync.stream({match: '**/*.css'}))
-    // .on('end', () => {
-    //   gulp
-    //     .src(CSS_DEPENDENCIES)
-    //     .pipe(plugins.sourcemaps.init())
-    //     .pipe(plugins.cleanCss())
-    //     .pipe(plugins.concat('css/libs.min.css'))
-    //     .pipe(plugins.sourcemaps.write(`../${DIRS.dest}`))
-    //     .pipe(gulp.dest(DIRS.dest))
-    //     .pipe(browserSync.stream({match: '**/*.css'}))
-    // });
+    .pipe(plugins.sourcemaps.write(`../${DIRS.build}`))
+    .pipe(gulp.dest(DIRS.build))
+    .pipe(browserSync.stream({match: '**/*.css'}));
 });
 
-// Handle html changes.
-// gulp.task('html', done => {
-//   return gulp.src(PATHS.html)
-//     .pipe(gulp.dest(`${DIRS.dest}/templates`))
-//     .pipe(browserSync.stream({match: '**/*.html'}))
-// });
 // Handle js changes.
 gulp.task('js', done => {
   return gulp.src(PATHS.js)
@@ -61,13 +45,13 @@ gulp.task('js', done => {
     .pipe(plugins.babel())
     .pipe(plugins.concat(DIRS.js.app))
     .pipe(plugins.sourcemaps.write())
-    .pipe(gulp.dest(DIRS.dest))
+    .pipe(gulp.dest(DIRS.build))
     .pipe(browserSync.stream({match: '**/*.js'}))
     .on('end', () => {
       gulp
         .src(JS_DEPENDENCIES)
         .pipe(plugins.concat(DIRS.js.libs))
-        .pipe(gulp.dest(DIRS.dest));
+        .pipe(gulp.dest(DIRS.build));
     });
 });
 
@@ -78,13 +62,13 @@ gulp.task('minifyJS', done => {
     .pipe(plugins.concat(DIRS.js.app))
     .pipe(plugins.babel())
     .pipe(plugins.uglify())
-    .pipe(gulp.dest(DIRS.dest))
+    .pipe(gulp.dest(DIRS.build))
     .on('end', () => {
       gulp
         .src(JS_DEPENDENCIES)
         .pipe(plugins.concat(DIRS.js.libs))
         .pipe(plugins.uglify())
-        .pipe(gulp.dest(DIRS.dest));
+        .pipe(gulp.dest(DIRS.build));
     });
 });
 
@@ -92,7 +76,7 @@ gulp.task('minifyJS', done => {
 gulp.task('server', () => {
   browserSync({
     notify: false,
-    server: DIRS.dest,
+    server: DIRS.build,
     // open: false,
     tunnel: false,
     browser: "google chrome",
@@ -115,8 +99,36 @@ gulp.task('default', ['watch']);
 
 gulp.task('html', () => {
   return gulp.src(`${DIRS.src}/index.html`)
-    .pipe(gulp.dest(DIRS.dest))
-    .pipe(gulp.dest(DIRS.dest));
+    .pipe(gulp.dest(DIRS.build));
 });
 // Build command
-gulp.task('build', cb => sequence(['sass', 'minifyJS, html'], cb));
+gulp.task('build', ['sass', 'minifyJS', 'html']);
+
+// Generate distribution.
+gulp.task('dist', () => {
+  // JS
+  gulp.src(`${DIRS.src}/${DIRS.js.app}`)
+    .pipe(plugins.babel())
+    .pipe(plugins.concat(DIRS.js.app))
+    .pipe(gulp.dest(DIRS.dist));
+
+  // JS MIN
+  gulp.src(`${DIRS.src}/${DIRS.js.app}`)
+    .pipe(plugins.babel())
+    .pipe(plugins.uglify())
+    .pipe(plugins.concat(DIRS.js.min))
+    .pipe(gulp.dest(DIRS.dist));
+
+  // SASS
+  gulp.src(PATHS.sass)
+    .pipe(plugins.sass())
+    .pipe(plugins.concat('css/bubble-matrix.css'))
+    .pipe(gulp.dest(DIRS.dist));
+
+  // SASS MIN
+  gulp.src(PATHS.sass)
+    .pipe(plugins.sass())
+    .pipe(plugins.concat('css/bubble-matrix.min.css'))
+    .pipe(plugins.cleanCss())
+    .pipe(gulp.dest(DIRS.dist));
+});

@@ -1,0 +1,7 @@
+.babelrc
+.jshintrc
+assets
+build
+gulpfile.babel.js
+node_modules
+src
