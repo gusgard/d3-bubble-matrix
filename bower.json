@@ -1,10 +1,9 @@
 {
   "name": "d3-bubble-matrix",
   "description": "Bubble matrix with d3",
-  "main": "",
-  "authors": [
-    "Gustavo Gard"
-  ],
+  "version": "0.0.4",
+  "main": "dist/bubble-matrix.js",
+  "authors": ["Gustavo Gard"],
   "license": "MIT",
   "keywords": [
     "d3",
